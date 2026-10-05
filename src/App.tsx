@@ -1,161 +1,125 @@
+import { useState } from "react";
+import { ArtifactPanel } from "./components/ArtifactPanel";
+import { BagPanel } from "./components/BagPanel";
+import { GridView } from "./components/GridView";
+import { LayerPanel } from "./components/LayerPanel";
+import { SealPanel } from "./components/SealPanel";
+import { StatusChip } from "./components/StatusChip";
+import { SyncPanel } from "./components/SyncPanel";
+import { coordConflicts, pendingSummary } from "./domain/rules";
+import { useArchive } from "./store/useArchive";
+import { WINDOW_ID } from "./store/remote";
 import "./styles.css";
 
 const project = {
-  "id": "hxwl-10",
-  "port": 5110,
-  "title": "考古探方记录",
-  "subtitle": "遗址探方、地层关系与出土物坐标档案",
-  "stack": "React + Vite + TypeScript + CSS",
-  "theme": [
-    "#854d0e",
-    "#047857",
-    "#475569"
-  ],
-  "domain": "考古发掘",
-  "users": [
-    "发掘队员",
-    "领队",
-    "资料整理员"
-  ],
-  "metrics": [
-    "探方数",
-    "地层数",
-    "出土物",
-    "未整理记录"
-  ],
-  "filters": [
-    "灰坑",
-    "墓葬",
-    "房址",
-    "沟状遗迹"
-  ],
-  "fields": [
-    "遗址",
-    "探方",
-    "地层",
-    "遗迹单位",
-    "深度",
-    "土色",
-    "坐标点",
-    "出土物"
-  ],
-  "records": [
-    [
-      "T0203",
-      "第3层",
-      "灰褐土",
-      "陶片12件，坐标E3N4"
-    ],
-    [
-      "T0204",
-      "H12灰坑",
-      "黑褐土",
-      "夹炭屑，见动物骨"
-    ],
-    [
-      "T0301",
-      "F2房址",
-      "夯土面",
-      "柱洞关系需复核"
-    ]
-  ]
+  id: "hxwl-10",
+  port: 5110,
+  title: "考古探方记录",
+  subtitle: "探方 · 地层 · 出土物 · 取样袋 —— 可续作的封存依据链",
 };
 
-const statusColors = ["status-ok", "status-watch", "status-danger"];
+const RULES = [
+  "出土物坐标必须落进所属探方网格，越界即冲突",
+  "取样袋只装同探方同地层、已登记且未运走的出土物",
+  `袋内件数与总重超上限即排队，封袋时才分配袋号，不先占号`,
+  "地层换版或封存申请变更：未封袋记录失效重算，已封袋保留原依据",
+  "断网先记本地，回连按袋号逐件合并，重复回传只入库一次",
+  "同一袋号两窗口同时提交先到者生效，写失败只重试未完成项",
+  "没有待处理袋和坐标冲突，封存申请才能通过；页面与导出同一依据",
+];
 
-function MetricCard({ label, value, index }: { label: string; value: string; index: number }) {
+function MetricCard({ label, value, index }: { label: string; value: number; index: number }) {
+  const tones = ["status-ok", "status-watch", "status-danger"];
   return (
     <article className="metric-card">
       <span>{label}</span>
       <strong>{value}</strong>
-      <i className={statusColors[index % statusColors.length]} />
+      <i className={tones[index % tones.length]} />
     </article>
   );
 }
 
-function App() {
-  const values = project.metrics.map((metric: string, index: number) => {
-    const base = [84, 12, 31, 7][index % 4];
-    return String(base + index * 3);
-  });
+export default function App() {
+  const { state, actions } = useArchive();
+  const [unitId, setUnitId] = useState(state.units[0].id);
+  const unit = state.units.find((u) => u.id === unitId) ?? state.units[0];
+  const artifacts = state.artifacts.filter((a) => a.unitId === unit.id);
+
+  const pendingAll = state.units.reduce((sum, u) => {
+    const p = pendingSummary(state, u.id);
+    return sum + p.openBags.length + p.queued.length + coordConflicts(state, u.id).length;
+  }, 0);
+
+  const metrics: [string, number][] = [
+    ["探方数", state.units.length],
+    ["地层数", state.layers.length],
+    ["出土物", state.artifacts.filter((a) => a.status !== "transported").length],
+    ["待处理项", pendingAll],
+  ];
 
   return (
     <main className="app-shell">
       <section className="hero">
         <div>
-          <p className="eyebrow">{project.id} · port {project.port}</p>
+          <p className="eyebrow">
+            {project.id} · port {project.port} · {WINDOW_ID} ·{" "}
+            {state.online ? "在线" : "断网（本地记录中）"}
+          </p>
           <h1>{project.title}</h1>
           <p className="subtitle">{project.subtitle}</p>
         </div>
         <div className="stack-card">
-          <span>技术栈</span>
-          <strong>{project.stack}</strong>
+          <span>封存规则</span>
+          <ul className="rule-list">
+            {RULES.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
         </div>
       </section>
 
       <section className="metrics-grid">
-        {project.metrics.map((metric: string, index: number) => (
-          <MetricCard key={metric} label={metric} value={values[index]} index={index} />
+        {metrics.map(([label, value], index) => (
+          <MetricCard key={label} label={label} value={value} index={index} />
         ))}
       </section>
 
-      <section className="workspace">
-        <aside className="panel narrow">
-          <h2>角色</h2>
-          <div className="chips">
-            {project.users.map((user: string) => (
-              <span key={user}>{user}</span>
-            ))}
-          </div>
-          <h2>筛选</h2>
-          <div className="chips muted">
-            {project.filters.map((filter: string) => (
-              <button key={filter}>{filter}</button>
-            ))}
-          </div>
-        </aside>
+      <nav className="unit-tabs">
+        {state.units.map((u) => (
+          <button
+            key={u.id}
+            className={u.id === unit.id ? "tab active" : "tab"}
+            onClick={() => setUnitId(u.id)}
+          >
+            {u.id} <StatusChip kind="unit" status={u.status} />
+          </button>
+        ))}
+      </nav>
 
-        <section className="panel">
-          <div className="section-heading">
-            <div>
-              <p>{project.domain}</p>
-              <h2>记录字段</h2>
-            </div>
-            <button className="primary-action">新增记录</button>
-          </div>
-          <div className="field-grid">
-            {project.fields.map((field: string) => (
-              <label key={field}>
-                <span>{field}</span>
-                <input placeholder={"填写" + field} />
-              </label>
-            ))}
-          </div>
-        </section>
+      <section className="workspace">
+        <aside className="side-col">
+          <LayerPanel key={`layer-${unit.id}`} state={state} actions={actions} unitId={unit.id} />
+          <SealPanel key={`seal-${unit.id}`} state={state} actions={actions} unitId={unit.id} />
+        </aside>
+        <div className="main-col">
+          <GridView unit={unit} artifacts={artifacts} />
+          <ArtifactPanel
+            key={`artifact-${unit.id}`}
+            state={state}
+            actions={actions}
+            unitId={unit.id}
+          />
+        </div>
       </section>
 
-      <section className="records panel">
-        <div className="section-heading">
-          <div>
-            <p>示例数据</p>
-            <h2>近期记录</h2>
-          </div>
-          <button>导出摘要</button>
+      <section className="workspace">
+        <div className="main-col">
+          <BagPanel state={state} actions={actions} unitId={unit.id} />
         </div>
-        <div className="record-list">
-          {project.records.map((record: string[], index: number) => (
-            <article key={record.join("-")} className="record-card">
-              <div className="record-index">{String(index + 1).padStart(2, "0")}</div>
-              <div>
-                <h3>{record[0]}</h3>
-                <p>{record.slice(1).join(" · ")}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+        <aside className="side-col">
+          <SyncPanel state={state} actions={actions} />
+        </aside>
       </section>
     </main>
   );
 }
-
-export default App;
