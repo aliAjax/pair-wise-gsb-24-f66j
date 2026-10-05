@@ -31,6 +31,38 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.btn-danger {
+  border-color: #fecdd3;
+  color: #e11d48;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.danger-text {
+  color: #e11d48;
+}
+
+.warn-text {
+  color: #b45309;
+}
+
+.empty-line {
+  margin: 8px 0;
+}
+
 .app-shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -214,13 +246,26 @@ label {
   gap: 8px;
 }
 
-input {
+input,
+textarea {
   width: 100%;
   min-height: 42px;
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0 12px;
   color: #172033;
+}
+
+textarea {
+  padding: 10px 12px;
+  min-height: 64px;
+  resize: vertical;
+  font: inherit;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  min-height: auto;
 }
 
 .record-list {
@@ -260,6 +305,471 @@ input {
   line-height: 1.6;
 }
 
+/* ---------- 同步状态卡 ---------- */
+
+.sync-card {
+  gap: 12px;
+}
+
+.sync-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.on {
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.status-dot.off {
+  background: #e11d48;
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.15);
+}
+
+.sync-stats {
+  display: flex;
+  gap: 14px;
+  font-size: 14px;
+}
+
+.sync-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.fault-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #526070;
+}
+
+.sync-hint {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---------- 通用徽标 ---------- */
+
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.chip-ok {
+  background: color-mix(in srgb, var(--accent) 14%, #ffffff);
+  color: var(--accent);
+}
+
+.chip-info {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.chip-warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.chip-danger {
+  background: #ffe4e6;
+  color: #e11d48;
+}
+
+.chip-muted {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.chip-primary {
+  background: color-mix(in srgb, var(--primary) 14%, #ffffff);
+  color: var(--primary);
+}
+
+.chip-active {
+  border-color: var(--primary) !important;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.st-registered {
+  background: color-mix(in srgb, var(--accent) 14%, #ffffff);
+  color: var(--accent);
+}
+
+.st-bagged {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.st-sealed {
+  background: color-mix(in srgb, var(--primary) 16%, #ffffff);
+  color: var(--primary);
+}
+
+.st-shipped {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+/* ---------- 探方与地层 ---------- */
+
+.unit-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.unit-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 4px 10px;
+  text-align: left;
+  padding: 10px 12px;
+  min-height: 0;
+}
+
+.unit-item .muted {
+  font-size: 12px;
+}
+
+.unit-item.active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 7%, #ffffff);
+}
+
+.layer-list {
+  display: grid;
+  gap: 10px;
+}
+
+.layer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.layer-row p {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+
+/* ---------- 页签与表单 ---------- */
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  min-height: 34px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.tab i {
+  font-style: normal;
+  color: #94a3b8;
+  margin-left: 2px;
+}
+
+.tab.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--primary) 7%, #ffffff);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* ---------- 出土物表格 ---------- */
+
+.art-table {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.art-row {
+  display: grid;
+  grid-template-columns: 30px 1.5fr 1.3fr 0.7fr 1.1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  background: #ffffff;
+}
+
+.art-row:last-child {
+  border-bottom: none;
+}
+
+.art-row.art-head {
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.art-row.conflict {
+  background: #fff7f7;
+}
+
+.coord-edit {
+  display: flex;
+  gap: 6px;
+}
+
+.coord-edit input {
+  min-height: 30px;
+  width: 84px;
+  padding: 0 8px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bag-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: #fbfdff;
+  font-size: 14px;
+}
+
+.bag-bar-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- 取样袋与队列 ---------- */
+
+.workspace-bags {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.side-stack {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+
+.bag-list,
+.queue-list {
+  display: grid;
+  gap: 12px;
+}
+
+.bag-card,
+.queue-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fbfdff;
+  display: grid;
+  gap: 8px;
+}
+
+.bag-card.void {
+  opacity: 0.62;
+  background: #f8fafc;
+}
+
+.bag-card.sealed {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+
+.bag-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.bag-meta {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.limit-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #eef2f7;
+  overflow: hidden;
+}
+
+.limit-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.bag-items {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* ---------- 封存申请 ---------- */
+
+.apply-form {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.app-note {
+  border-left: 3px solid var(--primary);
+  padding-left: 10px;
+  line-height: 1.6;
+}
+
+.check-list {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.check-list li {
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.check-list li.ok {
+  background: color-mix(in srgb, var(--accent) 9%, #ffffff);
+  color: var(--accent);
+}
+
+.check-list li.bad {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.sealed-banner {
+  background: color-mix(in srgb, var(--primary) 9%, #ffffff);
+  color: var(--primary);
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+}
+
+.basis-block {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.basis-preview {
+  max-height: 320px;
+  overflow: auto;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ---------- 底部：回传队列与流转记录 ---------- */
+
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.op-list {
+  display: grid;
+  gap: 8px;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.op-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.op-row .chip {
+  margin-left: 0;
+}
+
+.op-label {
+  font-weight: 600;
+}
+
+.log-list {
+  max-height: 300px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.log-list p {
+  margin: 0 0 6px;
+}
+
+@media (max-width: 1080px) {
+  .workspace-bags,
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 860px) {
   .hero,
   .workspace,
@@ -267,7 +777,13 @@ input {
     grid-template-columns: 1fr;
   }
 
-  .field-grid {
+  .field-grid,
+  .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .art-row {
+    grid-template-columns: 24px 1fr 1fr;
+    grid-auto-rows: auto;
   }
 }

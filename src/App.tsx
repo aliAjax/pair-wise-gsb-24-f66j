@@ -1,161 +1,88 @@
 import "./styles.css";
+import { StoreProvider, useStore } from "./store";
+import * as R from "./rules";
+import SyncCard from "./components/SyncCard";
+import UnitLayerPanel from "./components/UnitLayerPanel";
+import ArtifactPanel from "./components/ArtifactPanel";
+import BagPanel from "./components/BagPanel";
+import QueuePanel from "./components/QueuePanel";
+import SealPanel from "./components/SealPanel";
+import LogPanel from "./components/LogPanel";
 
-const project = {
-  "id": "hxwl-10",
-  "port": 5110,
-  "title": "考古探方记录",
-  "subtitle": "遗址探方、地层关系与出土物坐标档案",
-  "stack": "React + Vite + TypeScript + CSS",
-  "theme": [
-    "#854d0e",
-    "#047857",
-    "#475569"
-  ],
-  "domain": "考古发掘",
-  "users": [
-    "发掘队员",
-    "领队",
-    "资料整理员"
-  ],
-  "metrics": [
-    "探方数",
-    "地层数",
-    "出土物",
-    "未整理记录"
-  ],
-  "filters": [
-    "灰坑",
-    "墓葬",
-    "房址",
-    "沟状遗迹"
-  ],
-  "fields": [
-    "遗址",
-    "探方",
-    "地层",
-    "遗迹单位",
-    "深度",
-    "土色",
-    "坐标点",
-    "出土物"
-  ],
-  "records": [
-    [
-      "T0203",
-      "第3层",
-      "灰褐土",
-      "陶片12件，坐标E3N4"
-    ],
-    [
-      "T0204",
-      "H12灰坑",
-      "黑褐土",
-      "夹炭屑，见动物骨"
-    ],
-    [
-      "T0301",
-      "F2房址",
-      "夯土面",
-      "柱洞关系需复核"
-    ]
-  ]
-};
-
-const statusColors = ["status-ok", "status-watch", "status-danger"];
-
-function MetricCard({ label, value, index }: { label: string; value: string; index: number }) {
+function MetricCard({ label, value, index }: { label: string; value: number; index: number }) {
+  const colors = ["status-ok", "status-watch", "status-danger"];
   return (
     <article className="metric-card">
       <span>{label}</span>
       <strong>{value}</strong>
-      <i className={statusColors[index % statusColors.length]} />
+      <i className={colors[index % colors.length]} />
     </article>
   );
 }
 
-function App() {
-  const values = project.metrics.map((metric: string, index: number) => {
-    const base = [84, 12, 31, 7][index % 4];
-    return String(base + index * 3);
-  });
+function Shell() {
+  const { state } = useStore();
+  const pendingBags =
+    state.bags.filter((b) => b.status === "open").length +
+    state.queue.filter((q) => q.status === "queued").length;
+  const conflicts = state.units.reduce(
+    (n, u) =>
+      n +
+      state.artifacts.filter(
+        (a) => a.unitId === u.id && a.status !== "shipped" && a.status !== "sealed" && R.coordConflict(a, u)
+      ).length,
+    0
+  );
+
+  const metrics: [string, number][] = [
+    ["探方数", state.units.length],
+    ["地层数", state.layers.length],
+    ["出土物", state.artifacts.length],
+    ["待处理", pendingBags + conflicts],
+  ];
 
   return (
     <main className="app-shell">
       <section className="hero">
         <div>
-          <p className="eyebrow">{project.id} · port {project.port}</p>
-          <h1>{project.title}</h1>
-          <p className="subtitle">{project.subtitle}</p>
+          <p className="eyebrow">hxwl-10 · port 5110 · 窗口 #{state.sessionId}</p>
+          <h1>考古探方记录</h1>
+          <p className="subtitle">
+            遗址探方、地层关系与出土物坐标档案：坐标落格校验、超限排队不占袋号、
+            换版失效重算、断网本地记录回连逐件合并，封存申请与导出共用同一依据。
+          </p>
         </div>
-        <div className="stack-card">
-          <span>技术栈</span>
-          <strong>{project.stack}</strong>
-        </div>
+        <SyncCard />
       </section>
 
       <section className="metrics-grid">
-        {project.metrics.map((metric: string, index: number) => (
-          <MetricCard key={metric} label={metric} value={values[index]} index={index} />
+        {metrics.map(([label, value], i) => (
+          <MetricCard key={label} label={label} value={value} index={i} />
         ))}
       </section>
 
       <section className="workspace">
-        <aside className="panel narrow">
-          <h2>角色</h2>
-          <div className="chips">
-            {project.users.map((user: string) => (
-              <span key={user}>{user}</span>
-            ))}
-          </div>
-          <h2>筛选</h2>
-          <div className="chips muted">
-            {project.filters.map((filter: string) => (
-              <button key={filter}>{filter}</button>
-            ))}
-          </div>
-        </aside>
-
-        <section className="panel">
-          <div className="section-heading">
-            <div>
-              <p>{project.domain}</p>
-              <h2>记录字段</h2>
-            </div>
-            <button className="primary-action">新增记录</button>
-          </div>
-          <div className="field-grid">
-            {project.fields.map((field: string) => (
-              <label key={field}>
-                <span>{field}</span>
-                <input placeholder={"填写" + field} />
-              </label>
-            ))}
-          </div>
-        </section>
+        <UnitLayerPanel />
+        <ArtifactPanel />
       </section>
 
-      <section className="records panel">
-        <div className="section-heading">
-          <div>
-            <p>示例数据</p>
-            <h2>近期记录</h2>
-          </div>
-          <button>导出摘要</button>
-        </div>
-        <div className="record-list">
-          {project.records.map((record: string[], index: number) => (
-            <article key={record.join("-")} className="record-card">
-              <div className="record-index">{String(index + 1).padStart(2, "0")}</div>
-              <div>
-                <h3>{record[0]}</h3>
-                <p>{record.slice(1).join(" · ")}</p>
-              </div>
-            </article>
-          ))}
+      <section className="workspace-bags">
+        <BagPanel />
+        <div className="side-stack">
+          <QueuePanel />
+          <SealPanel />
         </div>
       </section>
+
+      <LogPanel />
     </main>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <StoreProvider>
+      <Shell />
+    </StoreProvider>
+  );
+}
